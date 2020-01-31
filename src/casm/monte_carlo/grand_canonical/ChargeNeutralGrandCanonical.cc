@@ -315,38 +315,41 @@ namespace CASM {
         return;
     }
 
-  /// \brief Calculate the single spin flip low temperature expansion of the grand canonical potential
-  ///
-  /// Returns low temperature expansion estimate of the grand canonical free energy.
-  /// Works with the current ConfigDoF as groundstate.
-  ///
-  /// Quick derivation:
-  /// Z: partition function
-  /// boltz(x): exp(-x/kBT)
-  /// \Omega: (E-SUM(chem_pot*comp_n))*N
-  /// N: number of unit cells in supercell
-  ///
-  /// The partition function is
-  /// Z=SUM(boltz(\Omega_s))    summing over all microstates s
-  ///
-  /// \Omega_s can be split into groundstate \Omega_0 and a delta energy D\Omega
-  /// \Omega_s=\Omega_0+D\Omega_s
-  /// Z=boltz(\Omega_0)*SUM(boltz(D\Omega_s))  summing over all microstates
-  ///
-  /// For low temperatures we can approximate Z by truncating the sum after microstates that
-  /// only involve point defects and no defects
-  /// Z=boltz(\Omega_0)*SUM(boltz(D\Omega_s))  summing over all states with only point defects or no defects
-  ///
-  /// The free energy is
-  /// Phi=-kB*T*ln(Z)
-  /// Phi=-kB*T*(-\Omega_0/kBT+ln(SUM(boltz(D\Omega_s))    Sum is over point defects and no defects (in which case D\Omega_s == 0)
-  /// Phi=(\Omega_0-kB*T(ln(SUM(boltz(D\Omega_s)))))/N
-  ///
+  // / \brief Calculate the single spin flip low temperature expansion of the grand canonical potential
+  // /
+  // / Returns low temperature expansion estimate of the grand canonical free energy.
+  // / Works with the current ConfigDoF as groundstate.
+  // /
+  // / Quick derivation:
+  // / Z: partition function
+  // / boltz(x): exp(-x/kBT)
+  // / \Omega: (E-SUM(chem_pot*comp_n))*N
+  // / N: number of unit cells in supercell
+  // /
+  // / The partition function is
+  // / Z=SUM(boltz(\Omega_s))    summing over all microstates s
+  // /
+  // / \Omega_s can be split into groundstate \Omega_0 and a delta energy D\Omega
+  // / \Omega_s=\Omega_0+D\Omega_s
+  // / Z=boltz(\Omega_0)*SUM(boltz(D\Omega_s))  summing over all microstates
+  // /
+  // / For low temperatures we can approximate Z by truncating the sum after microstates that
+  // / only involve point defects and no defects
+  // / Z=boltz(\Omega_0)*SUM(boltz(D\Omega_s))  summing over all states with only point defects or no defects
+  // /
+  // / The free energy is
+  // / Phi=-kB*T*ln(Z)
+  // / Phi=-kB*T*(-\Omega_0/kBT+ln(SUM(boltz(D\Omega_s))    Sum is over point defects and no defects (in which case D\Omega_s == 0)
+  // / Phi=(\Omega_0-kB*T(ln(SUM(boltz(D\Omega_s)))))/N
+  // /
+  // Zeyu: I'm not sure whether my modification is correct or not....
+  // Here I did the similar thing as the charge neutral GCMC: everytime flip 2 sites together,
   // double ChargeNeutralGrandCanonical::lte_grand_canonical_free_energy() const {
 
   //   const SiteExchanger &site_exch = m_site_swaps;
   //   const ConfigDoF &config_dof = configdof();
-  //   GrandCanonicalEvent event = m_event;
+  //   ChargeNeutralGrandCanonicalEvent event = m_event;
+  //   int n_Na = 8;
 
   //   double tol = 1e-12;
 
@@ -362,41 +365,55 @@ namespace CASM {
   //   // double sum_exp = 0.0;
 
   //   //Loop over sites that can change occupants
-  //   for(Index exch_ind = 0; exch_ind < site_exch.variable_sites().size(); exch_ind++) {
-
+  //   for(Index exch_ind_1 = 0; exch_ind_1 < site_exch.variable_sites().size(); exch_ind_1++) {
+  //     for(Index exch_ind_2 = 0; exch_ind_2 < site_exch.variable_sites().size(); exch_ind_2++) {
   //     //Transform exchanger index to ConfigDoF index
-  //     Index mutating_site = site_exch.variable_sites()[exch_ind];
-  //     int sublat = site_exch.sublat()[exch_ind];
-  //     int current_occupant = config_dof.occ(mutating_site);
+  //     Index mutating_site_1 = site_exch.variable_sites()[exch_ind_1];
+  //     Index mutating_site_2 = site_exch.variable_sites()[exch_ind_2];
+  //     int sublat_1 = site_exch.sublat()[exch_ind_1];
+  //     int sublat_2 = site_exch.sublat()[exch_ind_2];
+  //     int current_occupant_1 = config_dof.occ(mutating_site_1);
+  //     int current_occupant_2 = config_dof.occ(mutating_site_2);
 
-  //     //Loop over possible occupants for site that can change
-  //     const auto &possible = site_exch.possible_swap()[sublat][current_occupant];
-  //     for(auto new_occ_it = possible.begin(); new_occ_it != possible.end(); ++new_occ_it) {
+  //     if(((sublat_1 <= n_Na && sublat_2 > n_Na) || (sublat_1 > n_Na && sublat_2 <= n_Na)) && (current_occupant_1 == current_occupant_2))
+  //       {
+  //       //Loop over possible occupants for site that can change
+  //       const auto &possible_1 = site_exch.possible_swap()[sublat_1][current_occupant_1];
+  //       const auto &possible_2 = site_exch.possible_swap()[sublat_2][current_occupant_2];
+  //       for(auto new_occ_it_1 = possible.begin(); new_occ_it_1 != possible.end(); ++new_occ_it_1) {
+  //         for(auto new_occ_it_2 = possible.begin(); new_occ_it_2 != possible.end(); ++new_occ_it_2){
+  //         // Zeyu: creating pairs
+  //         std::pair<Index,Index> mutating_sites (mutating_site_1,mutating_site_2);
+  //         std::pair<Index,Index> sublats (sublat_1,sublat_2);
+  //         std::pair<int,int> current_occupants (current_occupant_1,current_occupant_1);
+  //         std::pair<int,int> new_occupants (new_occ_it_1,new_occ_it_2);
+  //         // _update_deltas(event, mutating_site, sublat, current_occupant, *new_occ_it);
+  //         _update_deltas(event, mutating_sites, sublats, current_occupants, new_occupants) 
+  //         //save the result
+  //         double dpot_nrg = event.dEpot();
+  //         if(dpot_nrg < 0.0) {
+  //           Log &err_log = default_err_log();
+  //           err_log.error<Log::standard>("Calculating low temperature expansion (charge neutral)");
+  //           err_log << "  Defect lowered the potential energy. Your motif configuration "
+  //                   << "is not the 0K ground state.\n" << std::endl;
+  //           throw std::runtime_error("Error calculating low temperature expansion. Not in the ground state.");
+  //         }
 
-  //       _update_deltas(event, mutating_site, sublat, current_occupant, *new_occ_it);
 
-  //       //save the result
-  //       double dpot_nrg = event.dEpot();
-  //       if(dpot_nrg < 0.0) {
-  //         Log &err_log = default_err_log();
-  //         err_log.error<Log::standard>("Calculating low temperature expansion");
-  //         err_log << "  Defect lowered the potential energy. Your motif configuration "
-  //                 << "is not the 0K ground state.\n" << std::endl;
-  //         throw std::runtime_error("Error calculating low temperature expansion. Not in the ground state.");
+  //         auto it = hist.find(dpot_nrg);
+  //         if(it == hist.end()) {
+  //           hist[dpot_nrg] = 1;
+  //         }
+  //         else {
+  //           it->second++;
+  //         }
   //       }
-
-
-  //       auto it = hist.find(dpot_nrg);
-  //       if(it == hist.end()) {
-  //         hist[dpot_nrg] = 1;
   //       }
-  //       else {
-  //         it->second++;
   //       }
   //     }
   //   }
 
-  //   _log().results("Ground state and point defect potential energy details");
+  //   _log().results("Ground state (charge neutral) and point defect potential energy details");
   //   _log() << "T: " << m_condition.temperature() << std::endl;
   //   _log() << "kT: " << 1.0 / m_condition.beta() << std::endl;
   //   _log() << "Beta: " << m_condition.beta() << std::endl << std::endl;
