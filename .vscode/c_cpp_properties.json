@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/userhome1/jerry/apps/src/CASMcode/include/**"
+                "/home/gustas/software/CASM_coupled/include/**"
                         ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

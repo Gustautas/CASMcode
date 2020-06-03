@@ -192,6 +192,7 @@ namespace CASM {
       _log().custom("Propose event");
 
       _log()  << "  Mutating site (linear index): " << mutating_site << "\n"
+              << "  ?Shakalaka?" << "\n"
               << "  Mutating site (b, i, j, k): " << supercell().uccoord(mutating_site) << "\n"
               << "  Current occupant: " << current_occupant << " (" << site_occ[current_occupant].name << ")\n"
               << "  Proposed occupant: " << new_occupant << " (" << site_occ[new_occupant].name << ")\n\n"

@@ -199,6 +199,7 @@ namespace CASM {
 
           _log()  << "  Mutating site 1 (linear index): " << mutating_site_1 << "\n"
                   << "  Sublattice: "<< sublat_1<<"\n"
+                  << "  ?Shakalaka?"<<"\n"
                   << "  Mutating site (b, i, j, k): " << supercell().uccoord(mutating_site_1) << "\n"
                   << "  Current occupant: " << current_occupant_1 << " (" << site_occ_1[current_occupant_1].name << ")\n"
                   << "  Proposed occupant: " << new_occupant_1 << " (" << site_occ_1[new_occupant_1].name << ")\n\n"
