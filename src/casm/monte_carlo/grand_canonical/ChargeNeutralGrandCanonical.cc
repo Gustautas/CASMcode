@@ -160,29 +160,52 @@ namespace CASM {
 
     /// \brief Propose a new event, calculate delta properties, and return reference to it
     /// <- Zeyu: This is different from GrandCanonical.cc, under construction......
+    /// Gustas: TODO this has to be changed
     const ChargeNeutralGrandCanonical::EventType &ChargeNeutralGrandCanonical::propose(){
         Index random_variable_site_1,random_variable_site_2;
         Index mutating_site_1,mutating_site_2;
         Index sublat_1,sublat_2;
         int current_occupant_1,current_occupant_2;
-	      int n_Na = 8;
+	      int n_Na = 6;
         
         // Zeyu: 2 mutations at the same time; pick one Na/Va and one Si/P with the same occupancy and flip them together
+        int iter_try = 1;
         do{
           // Randomly pick a site that's allowed more than one occupant
+          // TODO add site 3 for NA
+          
+          //Debug
+          std::cout << "iter: " << iter_try << std::endl;
+
           random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
           random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+          //debug
+          std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
+          std::cout << "random_variable_site_2: " << random_variable_site_2 << std::endl;
 
         // Determine what that site's linear index is and what the sublattice index is
           mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1];
           mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
+          //debug
+          std::cout << "mutating_site_1 : " << mutating_site_1 << std::endl;
+          std::cout << "mutating_site_2 : " << mutating_site_2 << std::endl;
 
           sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
           sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
-      
+           //debug
+          std::cout << "sublat_full : " << m_site_swaps.sublat() << std::endl;
+          std::cout << "sublat_1 : " << sublat_1 << std::endl;
+          std::cout << "sublat_2 : " << sublat_2 << std::endl;     
+
           // Determine the current occupant of the mutating site
           current_occupant_1 = configdof().occ(mutating_site_1);
           current_occupant_2 = configdof().occ(mutating_site_2);
+          //debug
+          std::cout << "current_occupant_1: " << current_occupant_1 << std::endl;
+          std::cout << "current_occupant_2: " << current_occupant_2 << std::endl;      
+
+          iter_try += 1;
+
         }
         while (!(((sublat_1 <= n_Na && sublat_2 > n_Na) || (sublat_1 > n_Na && sublat_2 <= n_Na)) && (current_occupant_1 == current_occupant_2)));
 
