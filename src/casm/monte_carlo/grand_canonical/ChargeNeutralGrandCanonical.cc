@@ -286,18 +286,18 @@ namespace CASM {
           Index new_species_2 = m_site_swaps.sublat_to_mol()[sublat_2][new_occupant_2];
 
           _log() << "  components: " << jsonParser(primclex().composition_axes().components()) << "\n"
-                 << "  d(N1): " << m_event.dN().first.transpose() << "\n"
-                 << "  d(N2): " << m_event.dN().second.transpose() << "\n"
+                 << "  d(N1): " << std::get<0>(m_event.dN()).transpose() << "\n"
+                 << "  d(N2): " << std::get<1>(m_event.dN()).transpose() << "\n"
                  << "    dx_dn: \n" << Mpinv << "\n"
                  << "    param_chem_pot.transpose() * dx_dn: \n" << param_chem_pot.transpose()*Mpinv << "\n"
-                 << "    param_chem_pot.transpose() * dx_dn * dN: " << param_chem_pot.transpose()*Mpinv *m_event.dN().first.cast<double>() << "\n"
+                 << "    param_chem_pot.transpose() * dx_dn * dN: " << param_chem_pot.transpose()*Mpinv *std::get<0>(m_event.dN()).cast<double>() << "\n"
                  << "Swap step 1: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_1, curr_species_1) << "\n"
 
 
                  << "Swap step 2: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_2, curr_species_2) << "\n"
 
-                 << "  d(Ef2): " << m_event.dEf().second << "\n"
-                 << "  d(Epot2): " << m_event.dEf().second - exchange_chem_pot(new_species_2, curr_species_2) << "\n"
+                 << "  d(Ef2): " << std::get<1>(m_event.dEf()) << "\n"
+                 << "  d(Epot2): " << std::get<1>(m_event.dEf()) - exchange_chem_pot(new_species_2, curr_species_2) << "\n"
                  << std::endl;
         }
 
@@ -343,14 +343,14 @@ namespace CASM {
         _configdof().occ(event.occupational_change().second.site_index()) = event.occupational_change().second.to_value();
 
         // Next update all properties that changed from the event // Zeyu: update twice, the volume does not change throughout the simulation
-        _formation_energy() += event.dEf().first / supercell().volume();
-        _formation_energy() += event.dEf().second / supercell().volume();
+        _formation_energy() += std::get<0>(event.dEf()) / supercell().volume();
+        _formation_energy() += std::get<1>(event.dEf()) / supercell().volume();
         _potential_energy() += event.dEpot().first / supercell().volume();
         _potential_energy() += event.dEpot().second / supercell().volume();
         _corr() += event.dCorr().first / supercell().volume();
         _corr() += event.dCorr().second / supercell().volume();
-        _comp_n() += event.dN().first.cast<double>() / supercell().volume();
-        _comp_n() += event.dN().second.cast<double>() / supercell().volume();
+        _comp_n() += std::get<0>(event.dN()).cast<double>() / supercell().volume();
+        _comp_n() += std::get<1>(event.dN()).cast<double>() / supercell().volume();
 
         return;
     }
@@ -692,7 +692,7 @@ namespace CASM {
         event.occupational_change().first.set(mutating_sites.first, sublats.first, new_occs.first);
 
         // ---- set dspecies --------------
-        for(int i = 0; i < event.dN().first.size(); ++i) {
+        for(int i = 0; i < std::get<0>(event.dN()).size(); ++i) {
           event.set_dN(i, 0);
         }
         Index curr_species_1 = m_site_swaps.sublat_to_mol()[sublats.first][curr_occs.first];
@@ -707,7 +707,7 @@ namespace CASM {
         event.set_dEf(_eci() * event.dCorr().first.data());
 
         // ---- set dpotential_energy --------------
-        double dEpot_1 = event.dEf().first - m_condition.exchange_chem_pot(new_species_1, curr_species_1);
+        double dEpot_1 = std::get<0>(event.dEf()) - m_condition.exchange_chem_pot(new_species_1, curr_species_1);
         event.set_dEpot(dEpot_1);
         // back up site 1 occupation
         event.set_original_occ_first_swap(_configdof().occ(event.occupational_change().first.site_index()));
@@ -719,7 +719,8 @@ namespace CASM {
         // ---- set OccMod --------------
         event.occupational_change().second.set(mutating_sites.second, sublats.second, new_occs.second);
         // ---- set dspecies --------------
-        for(int i = 0; i < event.dN().first.size(); ++i) {
+        // Gustas: previously was event.dN().fitst.size() for some reason...
+        for(int i = 0; i < std::get<1>(event.dN()).size(); ++i) {
           event.set_dN(i, 0);
         }
         Index curr_species_2 = m_site_swaps.sublat_to_mol()[sublats.second][curr_occs.second];
@@ -731,7 +732,7 @@ namespace CASM {
         // ---- set dformation_energy --------------
         event.set_dEf(_eci() * event.dCorr().second.data());
         // ---- set dpotential_energy --------------
-        double dEpot_2 = event.dEf().second - m_condition.exchange_chem_pot(new_species_2, curr_species_2);
+        double dEpot_2 = std::get<1>(event.dEf()) - m_condition.exchange_chem_pot(new_species_2, curr_species_2);
         event.set_dEpot(dEpot_2);
         // Calculate dEpot after two swaps
         event.set_dEpot_swapped_twice(dEpot_1+dEpot_2);
