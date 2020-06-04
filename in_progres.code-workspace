@@ -69,7 +69,8 @@
 			"typeinfo": "cpp",
 			"variant": "cpp",
 			"core": "cpp",
-			"random": "cpp"
+			"random": "cpp",
+			"*.ipp": "cpp"
 		}
 	}
 }
