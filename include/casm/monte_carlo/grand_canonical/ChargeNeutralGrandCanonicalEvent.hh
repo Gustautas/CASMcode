@@ -53,10 +53,10 @@ class ChargeNeutralGrandCanonicalEvent {
     	std::pair<double,double> dEpot() const;
 
     	/// \brief  Access the occupational modification for this event
-    	std::pair<OccMod,OccMod> &occupational_change();
+    	std::tuple<OccMod,OccMod> &occupational_change();
 
     	/// \brief const Access the occupational modification for this event
-    	const std::pair<OccMod,OccMod> &occupational_change() const;
+    	const std::tuple<OccMod,OccMod> &occupational_change() const;
 
     	/// \brief Access the changes in (extensive) correlations associated with this event
     	std::pair<Eigen::VectorXd,Eigen::VectorXd> &dCorr();
@@ -179,12 +179,12 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 
 	  /// \brief Access the occupational modification for this event
-	  inline std::pair<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change(){
+	  inline std::tuple<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change(){
 		  return m_occ_mod;
 	  }
 
 	  /// \brief const Access the occupational modification for this event
-	  inline const std::pair<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change() const{
+	  inline const std::tuple<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change() const{
 		  return m_occ_mod;
 	  }
 	

@@ -264,10 +264,10 @@ namespace CASM {
         }
 
         // Zeyu: creating pairs
-        std::pair<Index,Index> mutating_sites (mutating_site_1,mutating_site_2);
-        std::pair<Index,Index> sublats (sublat_1,sublat_2);
-        std::pair<int,int> current_occupants (current_occupant_1,current_occupant_1);
-        std::pair<int,int> new_occupants (new_occupant_1,new_occupant_2);
+        std::tuple<Index,Index> mutating_sites (mutating_site_1,mutating_site_2);
+        std::tuple<Index,Index> sublats (sublat_1,sublat_2);
+        std::tuple<int,int> current_occupants (current_occupant_1,current_occupant_1);
+        std::tuple<int,int> new_occupants (new_occupant_1,new_occupant_2);
 
         // Update delta properties in m_event
         // Zeyu: Pairs are passing into _update_deltas()
@@ -339,16 +339,16 @@ namespace CASM {
         }
 
         // First apply changes to configuration (just a single occupant change)
-        _configdof().occ(event.occupational_change().first.site_index()) = event.occupational_change().first.to_value();
-        _configdof().occ(event.occupational_change().second.site_index()) = event.occupational_change().second.to_value();
+        _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
+        _configdof().occ(std::get<1>(event.occupational_change()).site_index()) = std::get<1>(event.occupational_change()).to_value();
 
         // Next update all properties that changed from the event // Zeyu: update twice, the volume does not change throughout the simulation
         _formation_energy() += std::get<0>(event.dEf()) / supercell().volume();
         _formation_energy() += std::get<1>(event.dEf()) / supercell().volume();
-        _potential_energy() += event.dEpot().first / supercell().volume();
-        _potential_energy() += event.dEpot().second / supercell().volume();
-        _corr() += event.dCorr().first / supercell().volume();
-        _corr() += event.dCorr().second / supercell().volume();
+        _potential_energy() += std::get<0>(event.dEpot()) / supercell().volume();
+        _potential_energy() += std::get<1>(event.dEpot()) / supercell().volume();
+        _corr() += std::get<0>(event.dCorr()) / supercell().volume();
+        _corr() += std::get<1>(event.dCorr()) / supercell().volume();
         _comp_n() += std::get<0>(event.dN()).cast<double>() / supercell().volume();
         _comp_n() += std::get<1>(event.dN()).cast<double>() / supercell().volume();
 
@@ -545,13 +545,13 @@ namespace CASM {
         _clexulator().calc_delta_point_corr(sublat,
                                             current_occupant,
                                             new_occupant,
-                                            event.dCorr().first.data());
+                                            std::get<0>(event.dCorr()).data());
                                             }
         if (event.is_swapped()) {
         _clexulator().calc_delta_point_corr(sublat,
                                             current_occupant,
                                             new_occupant,
-                                            event.dCorr().second.data());
+                                            std::get<1>(event.dCorr()).data());
                                             }
       }
       else {
@@ -561,7 +561,7 @@ namespace CASM {
         _clexulator().calc_restricted_delta_point_corr(sublat,
                                                        current_occupant,
                                                        new_occupant,
-                                                       event.dCorr().first.data(),
+                                                       std::get<0>(event.dCorr()).data(),
                                                        begin,
                                                        end);
         }
@@ -569,7 +569,7 @@ namespace CASM {
         _clexulator().calc_restricted_delta_point_corr(sublat,
                                                        current_occupant,
                                                        new_occupant,
-                                                       event.dCorr().second.data(),
+                                                       std::get<1>(event.dCorr()).data(),
                                                        begin,
                                                        end);          
         }
@@ -579,12 +579,12 @@ namespace CASM {
       Eigen::VectorXd before;
       Eigen::VectorXd after;
       if (!event.is_swapped()){
-      before = Eigen::VectorXd::Zero(event.dCorr().first.size()); //Zeyu: is this correct????
-      after = Eigen::VectorXd::Zero(event.dCorr().first.size());
+      before = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size()); //Zeyu: is this correct????
+      after = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size());
       }
       if (event.is_swapped()){
-      before = Eigen::VectorXd::Zero(event.dCorr().second.size());
-      after = Eigen::VectorXd::Zero(event.dCorr().second.size());        
+      before = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());
+      after = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());        
       }
 
       // Calculate the change in points correlations due to this event
@@ -616,10 +616,10 @@ namespace CASM {
 
       // Calculate the change in correlations due to this event
       if (!event.is_swapped()){
-      event.dCorr().first = after - before;
+      std::get<0>(event.dCorr()) = after - before;
       }
       if (event.is_swapped()){
-      event.dCorr().second = after - before;  
+      std::get<1>(event.dCorr()) = after - before;  
       }
 
       // Unapply changes
@@ -628,10 +628,10 @@ namespace CASM {
 
     if(debug()) {
       if (!event.is_swapped()){
-      _print_correlations(event.dCorr().first, "delta correlations", "dCorr", all_correlations);
+      _print_correlations(std::get<0>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
       if (event.is_swapped()){
-      _print_correlations(event.dCorr().second, "delta correlations", "dCorr", all_correlations);
+      _print_correlations(std::get<1>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
     }
   }
@@ -680,64 +680,64 @@ namespace CASM {
     /// do this site by site and then calculate total dEpot and store in ChargeNeutralGrandCanonicalEvent
     /// and use it to for check()
 	void ChargeNeutralGrandCanonical::_update_deltas(EventType &event, 
-						std::pair<Index,Index> &mutating_sites,
-						std::pair<Index,Index> &sublats,
-						std::pair<int,int> &curr_occs,
-						std::pair<int,int> &new_occs) const{
+						std::tuple<Index,Index> &mutating_sites,
+						std::tuple<Index,Index> &sublats,
+						std::tuple<int,int> &curr_occs,
+						std::tuple<int,int> &new_occs) const{
         // reset the flag
         event.set_is_swapped(false);
 
         // Site 1
         // ---- set OccMod --------------
-        event.occupational_change().first.set(mutating_sites.first, sublats.first, new_occs.first);
+        std::get<0>(event.occupational_change()).set(std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(new_occs));
 
         // ---- set dspecies --------------
         for(int i = 0; i < std::get<0>(event.dN()).size(); ++i) {
           event.set_dN(i, 0);
         }
-        Index curr_species_1 = m_site_swaps.sublat_to_mol()[sublats.first][curr_occs.first];
-        Index new_species_1 = m_site_swaps.sublat_to_mol()[sublats.first][new_occs.first];
+        Index curr_species_1 = m_site_swaps.sublat_to_mol()[std::get<0>(sublats)][std::get<0>(curr_occs)];
+        Index new_species_1 = m_site_swaps.sublat_to_mol()[std::get<0>(sublats)][std::get<0>(new_occs)];
         event.set_dN(curr_species_1, -1);
         event.set_dN(new_species_1, 1);
 
         // ---- set dcorr --------------
-        _set_dCorr(event, mutating_sites.first, sublats.first, curr_occs.first, new_occs.first, m_use_deltas, m_all_correlations); // Zeyu: Shall we rewrite _set_dCorr?
+        _set_dCorr(event, std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(curr_occs), std::get<0>(new_occs), m_use_deltas, m_all_correlations); // Zeyu: Shall we rewrite _set_dCorr?
 
         // ---- set dformation_energy --------------
-        event.set_dEf(_eci() * event.dCorr().first.data());
+        event.set_dEf(_eci() * std::get<0>(event.dCorr()).data());
 
         // ---- set dpotential_energy --------------
         double dEpot_1 = std::get<0>(event.dEf()) - m_condition.exchange_chem_pot(new_species_1, curr_species_1);
         event.set_dEpot(dEpot_1);
         // back up site 1 occupation
-        event.set_original_occ_first_swap(_configdof().occ(event.occupational_change().first.site_index()));
+        event.set_original_occ_first_swap(_configdof().occ(std::get<0>(event.occupational_change()).site_index()));
         // // Site 1 modification finished, update configuration ....
-        _configdof().occ(event.occupational_change().first.site_index()) = event.occupational_change().first.to_value();
+        _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
         // mark the changes of the first site
         event.set_is_swapped(true);
         // Site 2
         // ---- set OccMod --------------
-        event.occupational_change().second.set(mutating_sites.second, sublats.second, new_occs.second);
+        std::get<1>(event.occupational_change()).set(std::get<1>(mutating_sites), std::get<1>(sublats), std::get<1>(new_occs));
         // ---- set dspecies --------------
         // Gustas: previously was event.dN().fitst.size() for some reason...
         for(int i = 0; i < std::get<1>(event.dN()).size(); ++i) {
           event.set_dN(i, 0);
         }
-        Index curr_species_2 = m_site_swaps.sublat_to_mol()[sublats.second][curr_occs.second];
-        Index new_species_2 = m_site_swaps.sublat_to_mol()[sublats.second][new_occs.second];
+        Index curr_species_2 = m_site_swaps.sublat_to_mol()[std::get<1>(sublats)][std::get<1>(curr_occs)];
+        Index new_species_2 = m_site_swaps.sublat_to_mol()[std::get<1>(sublats)][std::get<1>(new_occs)];
         event.set_dN(curr_species_2, -1);
         event.set_dN(new_species_2, 1);
         // ---- set dcorr --------------
-        _set_dCorr(event, mutating_sites.second, sublats.second, curr_occs.second, new_occs.second, m_use_deltas, m_all_correlations);
+        _set_dCorr(event, std::get<1>(mutating_sites), std::get<1>(sublats), std::get<1>(curr_occs), std::get<1>(new_occs), m_use_deltas, m_all_correlations);
         // ---- set dformation_energy --------------
-        event.set_dEf(_eci() * event.dCorr().second.data());
+        event.set_dEf(_eci() * std::get<1>(event.dCorr()).data());
         // ---- set dpotential_energy --------------
         double dEpot_2 = std::get<1>(event.dEf()) - m_condition.exchange_chem_pot(new_species_2, curr_species_2);
         event.set_dEpot(dEpot_2);
         // Calculate dEpot after two swaps
         event.set_dEpot_swapped_twice(dEpot_1+dEpot_2);
         // Zeyu: after get dEpot_swapped_twice, change configuration back to origin....
-        _configdof().occ(event.occupational_change().first.site_index()) = event.original_occ_first_swap();
+        _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = event.original_occ_first_swap();
         event.set_is_swapped(false);
         
     }
