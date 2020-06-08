@@ -59,10 +59,10 @@ class ChargeNeutralGrandCanonicalEvent {
     	const std::pair<OccMod,OccMod> &occupational_change() const;
 
     	/// \brief Access the changes in (extensive) correlations associated with this event
-    	std::pair<Eigen::VectorXd,Eigen::VectorXd> &dCorr();
+    	std::tuple<Eigen::VectorXd,Eigen::VectorXd> &dCorr();
 
     	/// \brief const Access the changes in (extensive) correlations associated with this event
-    	const std::pair<Eigen::VectorXd,Eigen::VectorXd> &dCorr() const;
+    	const std::tuple<Eigen::VectorXd,Eigen::VectorXd> &dCorr() const;
 
 		void set_original_occ_first_swap(int occ);
 		int const original_occ_first_swap() const;
@@ -79,7 +79,7 @@ class ChargeNeutralGrandCanonicalEvent {
 
   	private:
     	/// \brief Change in (extensive) correlations due to this event
-    	std::pair<Eigen::VectorXd,Eigen::VectorXd> m_dCorr;
+    	std::tuple<Eigen::VectorXd,Eigen::VectorXd> m_dCorr;
 
     	/// \brief Change in (extensive) formation energy due to this event
     	std::pair<double,double> m_dEf;
@@ -109,9 +109,9 @@ class ChargeNeutralGrandCanonicalEvent {
   ///
   inline ChargeNeutralGrandCanonicalEvent::ChargeNeutralGrandCanonicalEvent(size_type Nspecies, size_type Ncorr){
 		// if (!is_swapped()){
-			m_dCorr.first = Eigen::VectorXd(Ncorr);
+			std::get<0>(m_dCorr) = Eigen::VectorXd(Ncorr);
 			m_dN.first = Eigen::VectorXl(Nspecies);
-			m_dCorr.second = Eigen::VectorXd(Ncorr);
+			std::get<1>(m_dCorr) = Eigen::VectorXd(Ncorr);
 			m_dN.second = Eigen::VectorXl(Nspecies);
 
 		// }
@@ -188,11 +188,11 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 	
 	  /// \brief Access the changes in (extensive) correlations associated with this event
-      inline std::pair<Eigen::VectorXd,Eigen::VectorXd>&ChargeNeutralGrandCanonicalEvent::dCorr(){
+      inline std::tuple<Eigen::VectorXd,Eigen::VectorXd>&ChargeNeutralGrandCanonicalEvent::dCorr(){
 		  return m_dCorr;
 	  }
       /// \brief const Access the changes in (extensive) correlations associated with this event
-      inline const std::pair<Eigen::VectorXd,Eigen::VectorXd> &ChargeNeutralGrandCanonicalEvent::dCorr() const{
+      inline const std::tuple<Eigen::VectorXd,Eigen::VectorXd> &ChargeNeutralGrandCanonicalEvent::dCorr() const{
 		  return m_dCorr;
 	  }
 	  inline void ChargeNeutralGrandCanonicalEvent::set_is_swapped(bool is_swapped){

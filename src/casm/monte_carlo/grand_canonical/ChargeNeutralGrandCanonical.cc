@@ -159,38 +159,81 @@ namespace CASM {
   }
 
     /// \brief Propose a new event, calculate delta properties, and return reference to it
-    /// <- Zeyu: This is different from GrandCanonical.cc, under construction......
+    /// Gustas: TODO: optimise selection
     const ChargeNeutralGrandCanonical::EventType &ChargeNeutralGrandCanonical::propose(){
-        Index random_variable_site_1,random_variable_site_2;
-        Index mutating_site_1,mutating_site_2;
-        Index sublat_1,sublat_2;
-        int current_occupant_1,current_occupant_2;
+        Index random_variable_site_1,random_variable_site_2, random_variable_site_3;
+        Index mutating_site_1,mutating_site_2,mutating_site_3;
+        Index sublat_1,sublat_2,sublat_3;
+        int current_occupant_1,current_occupant_2,current_occupant_3;
 	      int n_Na = 6;
         
         // Zeyu: 2 mutations at the same time; pick one Na/Va and one Si/P with the same occupancy and flip them together
+        int iter_try = 1;
         do{
           // Randomly pick a site that's allowed more than one occupant
+          // TODO add site 3 for NA
+          
+          //Debug
+          std::cout << "iter: " << iter_try << std::endl;
+          /// TODO: first and second representing Na/Va and third representing Mn/Ti. Not yewt
+          // G: back and forward (debugging)
           random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
           random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+          random_variable_site_3 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+          //debug
+          std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
+          std::cout << "random_variable_site_2: " << random_variable_site_2 << std::endl;
+          std::cout << "random_variable_site_3: " << random_variable_site_3 << std::endl;
 
         // Determine what that site's linear index is and what the sublattice index is
-          mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1];
-          mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
+          mutating_site_1 =  0;//m_site_swaps.variable_sites()[random_variable_site_1];
+          mutating_site_2 =  5;//m_site_swaps.variable_sites()[random_variable_site_2];
+          mutating_site_3 =  11;//m_site_swaps.variable_sites()[random_variable_site_3];
+          //debug
+          std::cout << "mutating_site_1 : " << mutating_site_1 << std::endl;
+          std::cout << "mutating_site_2 : " << mutating_site_2 << std::endl;
+          std::cout << "mutating_site_3 : " << mutating_site_3 << std::endl;
 
-          sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
-          sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
-      
+          sublat_1 = 4;//m_site_swaps.sublat()[random_variable_site_1];
+          sublat_2 = 2;//m_site_swaps.sublat()[random_variable_site_2];
+          sublat_3 = 8;//m_site_swaps.sublat()[random_variable_site_3];
+           //debug
+          std::cout << "sublat_full : " << m_site_swaps.sublat() << std::endl;
+          std::cout << "sublat_1 : " << sublat_1 << std::endl;
+          std::cout << "sublat_2 : " << sublat_2 << std::endl;     
+          std::cout << "sublat_3 : " << sublat_3 << std::endl;     
+
           // Determine the current occupant of the mutating site
           current_occupant_1 = configdof().occ(mutating_site_1);
           current_occupant_2 = configdof().occ(mutating_site_2);
-        }
-        while (!(((sublat_1 <= n_Na && sublat_2 > n_Na) || (sublat_1 > n_Na && sublat_2 <= n_Na)) && (current_occupant_1 == current_occupant_2)));
+          current_occupant_3 = configdof().occ(mutating_site_3);
+          //debug
+          std::cout << "current_occupant_1: " << current_occupant_1 << std::endl;
+          std::cout << "current_occupant_2: " << current_occupant_2 << std::endl;      
+          std::cout << "current_occupant_3: " << current_occupant_3 << std::endl;      
+          iter_try += 1;
 
-        // Randomly pick a new occupant for the mutating site
+        }
+        while (
+          !(
+            (
+              // check if there are 2 Va/Na and one is Ti/Mn. Also if Va/Na sites are unique
+              true
+              //(sublat_1 <= n_Na && sublat_2 <= n_Na && sublat_3 > n_Na && sublat_1 != sublat_2) || 
+              //(sublat_1 > n_Na && sublat_2 <= n_Na && sublat_3 <= n_Na && sublat_2 != sublat_3) || 
+              //(sublat_1 <= n_Na && sublat_2 > n_Na && sublat_3 <= n_Na && sublat_1 != sublat_3) 
+            ) // && 
+              // (current_occupant_1 == current_occupant_2 && current_occupant_2 == current_occupant_3)
+          )
+        );
+
+        // Randomly pick a new occupants for the mutating sites
         const std::vector<int> &possible_mutation_1 = m_site_swaps.possible_swap()[sublat_1][current_occupant_1];
         int new_occupant_1 = possible_mutation_1[_mtrand().randInt(possible_mutation_1.size() - 1)];
         const std::vector<int> &possible_mutation_2 = m_site_swaps.possible_swap()[sublat_2][current_occupant_2];
         int new_occupant_2 = possible_mutation_2[_mtrand().randInt(possible_mutation_2.size() - 1)];
+        const std::vector<int> &possible_mutation_3 = m_site_swaps.possible_swap()[sublat_3][current_occupant_3];
+        int new_occupant_3 = possible_mutation_3[_mtrand().randInt(possible_mutation_3.size() - 1)];
 
         if(debug()) {
           const auto &site_occ_1 = primclex().get_prim().basis[sublat_1].site_occupant();
@@ -297,8 +340,8 @@ namespace CASM {
         _formation_energy() += std::get<1>(event.dEf()) / supercell().volume();
         _potential_energy() += std::get<0>(event.dEpot()) / supercell().volume();
         _potential_energy() += std::get<1>(event.dEpot()) / supercell().volume();
-        _corr() += event.dCorr().first / supercell().volume();
-        _corr() += event.dCorr().second / supercell().volume();
+        _corr() += std::get<0>(event.dCorr()) / supercell().volume();
+        _corr() += std::get<1>(event.dCorr()) / supercell().volume();
         _comp_n() += std::get<0>(event.dN()).cast<double>() / supercell().volume();
         _comp_n() += std::get<1>(event.dN()).cast<double>() / supercell().volume();
 
@@ -481,27 +524,31 @@ namespace CASM {
                                   int new_occupant,
                                   bool use_deltas,
                                   bool all_correlations) const {
-
+    std::cout << "!!!!!!!!!!!!!!!!!!!Calculating delta correlations" << std::endl;
     // uses _clexulator(), nlist(), _configdof()
 
     // Point the Clexulator to the right neighborhood and right ConfigDoF
     _clexulator().set_config_occ(_configdof().occupation().begin());
     _clexulator().set_nlist(nlist().sites(nlist().unitcell_index(mutating_site)).data());
-
+    /// Gustas: this turns on for big supercell
     if(use_deltas) {
       // Calculate the change in correlations due to this event
       if(all_correlations) {
+        std::cout << "!!!!!!!!!!!!!!!!!!!Big box: using deltas" << std::endl;
         if (!event.is_swapped()) {
         _clexulator().calc_delta_point_corr(sublat,
                                             current_occupant,
                                             new_occupant,
-                                            event.dCorr().first.data());
+                                            std::get<0>(event.dCorr()).data());
+        std::cout << "!!!!!!!!!!!!!!!!!!!Not swaped(all correlations)" << std::endl;
                                             }
+
         if (event.is_swapped()) {
         _clexulator().calc_delta_point_corr(sublat,
                                             current_occupant,
                                             new_occupant,
-                                            event.dCorr().second.data());
+                                            std::get<1>(event.dCorr()).data());
+        std::cout << "!!!!!!!!!!!!!!!!!!!Swaped (all correlations)" << std::endl;
                                             }
       }
       else {
@@ -511,34 +558,42 @@ namespace CASM {
         _clexulator().calc_restricted_delta_point_corr(sublat,
                                                        current_occupant,
                                                        new_occupant,
-                                                       event.dCorr().first.data(),
+                                                       std::get<0>(event.dCorr()).data(),
                                                        begin,
                                                        end);
+        std::cout << "!!!!!!!!!!!!!!!!!!!Not swaped (not all correlations)" << std::endl;
         }
         if (event.is_swapped()){
         _clexulator().calc_restricted_delta_point_corr(sublat,
                                                        current_occupant,
                                                        new_occupant,
-                                                       event.dCorr().second.data(),
+                                                       std::get<1>(event.dCorr()).data(),
                                                        begin,
                                                        end);          
+        std::cout << "!!!!!!!!!!!!!!!!!!Swaped (not all correlations)" << std::endl;
         }
       }
     }
+    ///Gustas: TODO: Make sure this is right !!?? 
     else {
+      std::cout << "!!!!!!!!!!!!!!!!!!!Small box: not using deltas" << std::endl;
       Eigen::VectorXd before;
       Eigen::VectorXd after;
       if (!event.is_swapped()){
-      before = Eigen::VectorXd::Zero(event.dCorr().first.size()); //Zeyu: is this correct????
-      after = Eigen::VectorXd::Zero(event.dCorr().first.size());
+      std::cout << "!!!!!!!!!!!!!!!!!!Not swaped (not all correlations)" << std::endl; 
+      before = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size()); //Zeyu: is this correct???? Gustas: whatewer, lets use big box anyway.
+      after = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size());
       }
       if (event.is_swapped()){
-      before = Eigen::VectorXd::Zero(event.dCorr().second.size());
-      after = Eigen::VectorXd::Zero(event.dCorr().second.size());        
+      std::cout << "!!!!!!!!!!!!!!!!!!Swaped (not all correlations)" << std::endl;
+      before = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());
+      after = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());        
       }
 
       // Calculate the change in points correlations due to this event
       if(all_correlations) {
+
+        std::cout << "!!!!!!!!!!!!!!!!!!All correlations" << std::endl; 
 
         // Calculate before
         _clexulator().calc_point_corr(sublat, before.data());
@@ -552,6 +607,7 @@ namespace CASM {
       else {
         auto begin = _eci().index().data();
         auto end = begin + _eci().index().size();
+        std::cout << "!!!!!!!!!!!!!!!!!!Not all correlations" << std::endl; 
 
         // Calculate before
         _clexulator().calc_restricted_point_corr(sublat, before.data(), begin, end);
@@ -566,10 +622,12 @@ namespace CASM {
 
       // Calculate the change in correlations due to this event
       if (!event.is_swapped()){
-      event.dCorr().first = after - before;
+      std::cout << "!!!!!!!!!!!!!!!!!!Not swaped" << std::endl; 
+      std::get<0>(event.dCorr()) = after - before;
       }
       if (event.is_swapped()){
-      event.dCorr().second = after - before;  
+      std::cout << "!!!!!!!!!!!!!!!!!!Swapped" << std::endl; 
+      std::get<1>(event.dCorr()) = after - before;  
       }
 
       // Unapply changes
@@ -578,10 +636,10 @@ namespace CASM {
 
     if(debug()) {
       if (!event.is_swapped()){
-      _print_correlations(event.dCorr().first, "delta correlations", "dCorr", all_correlations);
+      _print_correlations(std::get<0>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
       if (event.is_swapped()){
-      _print_correlations(event.dCorr().second, "delta correlations", "dCorr", all_correlations);
+      _print_correlations(std::get<1>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
     }
   }
@@ -654,7 +712,7 @@ namespace CASM {
         _set_dCorr(event, std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(curr_occs), std::get<0>(new_occs), m_use_deltas, m_all_correlations); // Zeyu: Shall we rewrite _set_dCorr?
 
         // ---- set dformation_energy --------------
-        event.set_dEf(_eci() * event.dCorr().first.data());
+        event.set_dEf(_eci() * std::get<0>(event.dCorr()).data());
 
         // ---- set dpotential_energy --------------
         double dEpot_1 = std::get<0>(event.dEf()) - m_condition.exchange_chem_pot(new_species_1, curr_species_1);
@@ -679,7 +737,7 @@ namespace CASM {
         // ---- set dcorr --------------
         _set_dCorr(event, std::get<1>(mutating_sites), std::get<1>(sublats), std::get<1>(curr_occs), std::get<1>(new_occs), m_use_deltas, m_all_correlations);
         // ---- set dformation_energy --------------
-        event.set_dEf(_eci() * event.dCorr().second.data());
+        event.set_dEf(_eci() * std::get<1>(event.dCorr()).data());
         // ---- set dpotential_energy --------------
         double dEpot_2 = std::get<1>(event.dEf()) - m_condition.exchange_chem_pot(new_species_2, curr_species_2);
         event.set_dEpot(dEpot_2);
