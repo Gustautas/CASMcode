@@ -63,7 +63,8 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "variant": "cpp",
-        "core": "cpp"
+        "core": "cpp",
+        "random": "cpp"
     },
     "python.pythonPath": "/userhome1/jerry/anaconda3/envs/casm_dev_jerry/bin/python"
 }
