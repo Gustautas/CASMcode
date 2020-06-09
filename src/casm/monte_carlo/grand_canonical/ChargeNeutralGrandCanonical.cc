@@ -299,8 +299,12 @@ namespace CASM {
                  << "Swap step 3: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_3, curr_species_3) << "\n"
 
                 /// TODO: make it for third
+                 << "  d(Ef1): " << std::get<0>(m_event.dEf()) << "\n"
+                 << "  d(Epot1): " << std::get<0>(m_event.dEf()) - exchange_chem_pot(new_species_1, curr_species_1) << "\n"
                  << "  d(Ef2): " << std::get<1>(m_event.dEf()) << "\n"
                  << "  d(Epot2): " << std::get<1>(m_event.dEf()) - exchange_chem_pot(new_species_2, curr_species_2) << "\n"
+                 << "  d(Ef3): " << std::get<2>(m_event.dEf()) << "\n"
+                 << "  d(Epot3): " << std::get<2>(m_event.dEf()) - exchange_chem_pot(new_species_3, curr_species_3) << "\n"
                  << std::endl;
         }
 

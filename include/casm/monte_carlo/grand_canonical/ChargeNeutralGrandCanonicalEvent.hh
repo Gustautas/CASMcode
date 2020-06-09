@@ -31,7 +31,7 @@ class ChargeNeutralGrandCanonicalEvent {
     	void set_dEf(double dEf);
 
     	/// \brief Return change in (extensive) formation energy associated with this event
-    	std::pair<double,double> dEf() const;
+    	std::tuple<double,double,double> dEf() const;
 
     	/// \brief Access change in number of species per supercell. Order as in CompositionConverter::components().
     	std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> &dN();
@@ -50,7 +50,7 @@ class ChargeNeutralGrandCanonicalEvent {
     	void set_dEpot(double dpot_nrg);
 
     	/// \brief Return change in (extensive) potential energy, dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
-    	std::pair<double,double> dEpot() const;
+    	std::tuple<double,double,double> dEpot() const;
 
     	/// \brief  Access the occupational modification for this event
     	std::pair<OccMod,OccMod> &occupational_change();
@@ -82,10 +82,10 @@ class ChargeNeutralGrandCanonicalEvent {
     	std::tuple<Eigen::VectorXd,Eigen::VectorXd> m_dCorr;
 
     	/// \brief Change in (extensive) formation energy due to this event
-    	std::pair<double,double> m_dEf;
+    	std::tuple<double,double,double> m_dEf;
 
     	/// \brief Change in (extensive) potential energy, dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
-    	std::pair<double,double> m_dEpot;
+    	std::tuple<double,double,double> m_dEpot;
 
     	/// \brief Change in number of each species in supercell due to this event.
     	///        The order is determined by primclex.get_param_comp().get_components()
@@ -120,16 +120,16 @@ class ChargeNeutralGrandCanonicalEvent {
 	 }
 
 	  /// \brief Return change in total (formation) energy associated with this event
-	  inline std::pair<double,double> ChargeNeutralGrandCanonicalEvent::dEf() const {
+	  inline std::tuple<double,double,double> ChargeNeutralGrandCanonicalEvent::dEf() const {
 	    return m_dEf;
 	  }
 	  /// \brief Set the change in total (formation) energy associated with this event
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dEf(double dEf) {
 		if(!is_swapped()){
-			m_dEf.first = dEf;
+			std::get<0>(m_dEf) = dEf;
 		}
 		if (is_swapped()){
-	   		m_dEf.second = dEf;
+	   		std::get<1>(m_dEf) = dEf;
 		}
 	  }
 
@@ -165,15 +165,15 @@ class ChargeNeutralGrandCanonicalEvent {
 	  /// \brief Set the change in potential energy: dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dEpot(double dEpot) {
 		if(!is_swapped()){
-			m_dEpot.first = dEpot;
+			std::get<0>(m_dEpot) = dEpot;
 		}
 		if (is_swapped()){
-	   		m_dEpot.second = dEpot;
+	   		std::get<1>(m_dEpot) = dEpot;
 		}
 	  }
 
 	  /// \brief Return change in potential energy: dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
-	  inline std::pair<double,double> ChargeNeutralGrandCanonicalEvent::dEpot() const {
+	  inline std::tuple<double,double,double> ChargeNeutralGrandCanonicalEvent::dEpot() const {
 	    return m_dEpot;
 	  }
 
