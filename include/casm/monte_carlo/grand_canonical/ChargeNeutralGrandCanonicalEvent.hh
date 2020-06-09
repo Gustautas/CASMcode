@@ -34,10 +34,10 @@ class ChargeNeutralGrandCanonicalEvent {
     	std::pair<double,double> dEf() const;
 
     	/// \brief Access change in number of species per supercell. Order as in CompositionConverter::components().
-    	std::pair<Eigen::VectorXl,Eigen::VectorXl> &dN();
+    	std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> &dN();
 
     	/// \brief const Access change in number of species per supercell. Order as in CompositionConverter::components().
-    	const std::pair<Eigen::VectorXl,Eigen::VectorXl> &dN() const;
+    	const std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> &dN() const;
 
     	/// \brief Set the change in number of species in supercell. Order as in CompositionConverter::components().
     	void set_dN(size_type species_type_index, long int dn);
@@ -89,7 +89,7 @@ class ChargeNeutralGrandCanonicalEvent {
 
     	/// \brief Change in number of each species in supercell due to this event.
     	///        The order is determined by primclex.get_param_comp().get_components()
-    	std::pair<Eigen::VectorXl,Eigen::VectorXl> m_dN;
+    	std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> m_dN;
 
     	/// \brief The ConfigDoF modification performed by this event , Pairs
     	std::pair <OccMod,OccMod> m_occ_mod;
@@ -110,9 +110,9 @@ class ChargeNeutralGrandCanonicalEvent {
   inline ChargeNeutralGrandCanonicalEvent::ChargeNeutralGrandCanonicalEvent(size_type Nspecies, size_type Ncorr){
 		// if (!is_swapped()){
 			std::get<0>(m_dCorr) = Eigen::VectorXd(Ncorr);
-			m_dN.first = Eigen::VectorXl(Nspecies);
+			std::get<0>(m_dN) = Eigen::VectorXl(Nspecies);
 			std::get<1>(m_dCorr) = Eigen::VectorXd(Ncorr);
-			m_dN.second = Eigen::VectorXl(Nspecies);
+			std::get<1>(m_dN) = Eigen::VectorXl(Nspecies);
 
 		// }
 		// if (is_swapped()){ // for initialization....
@@ -134,31 +134,31 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 
 	  /// \brief Access change in number of all species (extensive). Order as in CompositionConverter::components().
-	  inline std::pair<Eigen::VectorXl,Eigen::VectorXl> &ChargeNeutralGrandCanonicalEvent::dN() {
+	  inline std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> &ChargeNeutralGrandCanonicalEvent::dN() {
 	    return m_dN;
 	  }
 	  /// \brief const Access change in number of all species (extensive). Order as in CompositionConverter::components().
-	  inline const std::pair<Eigen::VectorXl,Eigen::VectorXl> &ChargeNeutralGrandCanonicalEvent::dN() const {
+	  inline const std::tuple<Eigen::VectorXl,Eigen::VectorXl,Eigen::VectorXl> &ChargeNeutralGrandCanonicalEvent::dN() const {
 	    return m_dN;
 	  }
 
 	  /// \brief const Access change in number of species (extensive) described by size_type. Order as in CompositionConverter::components().
 	  inline long int ChargeNeutralGrandCanonicalEvent::dN(size_type species_type_index) const {
 		if(!is_swapped()){
-			return m_dN.first(species_type_index);
+			return std::get<0>(m_dN)(species_type_index);
 		}
 		if (is_swapped()){
-	   		return m_dN.second(species_type_index);
+	   		return std::get<1>(m_dN)(species_type_index);
 		}
 	  }
 
 	  /// \brief Set the change in number of species (extensive) described by size_type. Order as in CompositionConverter::components().
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dN(size_type species_type_index, long int dNi) {
 		if(!is_swapped()){
-			 m_dN.first(species_type_index) = dNi;
+			 std::get<0>(m_dN)(species_type_index) = dNi;
 		}
 		if (is_swapped()){
-	   		 m_dN.second(species_type_index) = dNi;
+	   		 std::get<1>(m_dN)(species_type_index) = dNi;
 		}
 	  }
 

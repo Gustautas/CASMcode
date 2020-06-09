@@ -238,6 +238,7 @@ namespace CASM {
         if(debug()) {
           const auto &site_occ_1 = primclex().get_prim().basis[sublat_1].site_occupant();
           const auto &site_occ_2 = primclex().get_prim().basis[sublat_2].site_occupant();
+          const auto &site_occ_3 = primclex().get_prim().basis[sublat_3].site_occupant();
           _log().custom("Propose charge neutral grand canonical event");
 
           _log()  << "  Mutating site 1 (linear index): " << mutating_site_1 << "\n"
@@ -252,15 +253,21 @@ namespace CASM {
                   << "  Current occupant: " << current_occupant_2 << " (" << site_occ_2[current_occupant_2].name << ")\n"
                   << "  Proposed occupant: " << new_occupant_2 << " (" << site_occ_2[new_occupant_2].name << ")\n\n"
 
+                  << "  Mutating site 3 (linear index): " << mutating_site_3 << "\n"
+                  << "  Sublattice: "<< sublat_3<<"\n"
+                  << "  Mutating site (b, i, j, k): " << supercell().uccoord(mutating_site_3) << "\n"
+                  << "  Current occupant: " << current_occupant_3 << " (" << site_occ_3[current_occupant_3].name << ")\n"
+                  << "  Proposed occupant: " << new_occupant_3 << " (" << site_occ_3[new_occupant_3].name << ")\n\n"
+
                   << "  beta: " << m_condition.beta() << "\n"
                   << "  T: " << m_condition.temperature() << std::endl;
         }
 
         // Zeyu: creating pairs
-        std::tuple<Index,Index> mutating_sites (mutating_site_1,mutating_site_2);
-        std::tuple<Index,Index> sublats (sublat_1,sublat_2);
-        std::tuple<int,int> current_occupants (current_occupant_1,current_occupant_1);
-        std::tuple<int,int> new_occupants (new_occupant_1,new_occupant_2);
+        std::tuple<Index,Index,Index> mutating_sites (mutating_site_1,mutating_site_2,mutating_site_3);
+        std::tuple<Index,Index,Index> sublats (sublat_1,sublat_2,sublat_3);
+        std::tuple<int,int,int> current_occupants (current_occupant_1,current_occupant_2,current_occupant_3);
+        std::tuple<int,int,int> new_occupants (new_occupant_1,new_occupant_2,new_occupant_3);
 
         // Update delta properties in m_event
         // Zeyu: Pairs are passing into _update_deltas()
@@ -277,10 +284,13 @@ namespace CASM {
           Index new_species_1 = m_site_swaps.sublat_to_mol()[sublat_1][new_occupant_1];
           Index curr_species_2 = m_site_swaps.sublat_to_mol()[sublat_2][current_occupant_2];
           Index new_species_2 = m_site_swaps.sublat_to_mol()[sublat_2][new_occupant_2];
+          Index curr_species_3 = m_site_swaps.sublat_to_mol()[sublat_3][current_occupant_3];
+          Index new_species_3 = m_site_swaps.sublat_to_mol()[sublat_3][new_occupant_3];
 
           _log() << "  components: " << jsonParser(primclex().composition_axes().components()) << "\n"
                  << "  d(N1): " << std::get<0>(m_event.dN()).transpose() << "\n"
                  << "  d(N2): " << std::get<1>(m_event.dN()).transpose() << "\n"
+                 << "  d(N3): " << std::get<2>(m_event.dN()).transpose() << "\n"
                  << "    dx_dn: \n" << Mpinv << "\n"
                  << "    param_chem_pot.transpose() * dx_dn: \n" << param_chem_pot.transpose()*Mpinv << "\n"
                  << "    param_chem_pot.transpose() * dx_dn * dN: " << param_chem_pot.transpose()*Mpinv *std::get<0>(m_event.dN()).cast<double>() << "\n"
@@ -688,10 +698,10 @@ namespace CASM {
     /// do this site by site and then calculate total dEpot and store in ChargeNeutralGrandCanonicalEvent
     /// and use it to for check()
 	void ChargeNeutralGrandCanonical::_update_deltas(EventType &event, 
-						std::tuple<Index,Index> &mutating_sites,
-						std::tuple<Index,Index> &sublats,
-						std::tuple<int,int> &curr_occs,
-						std::tuple<int,int> &new_occs) const{
+						std::tuple<Index,Index,Index> &mutating_sites,
+						std::tuple<Index,Index,Index> &sublats,
+						std::tuple<int,int,int> &curr_occs,
+						std::tuple<int,int,int> &new_occs) const{
         // reset the flag
         event.set_is_swapped(false);
 

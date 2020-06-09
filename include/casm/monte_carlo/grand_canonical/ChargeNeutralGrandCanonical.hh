@@ -155,10 +155,10 @@ class ChargeNeutralGrandCanonical : public MonteCarlo{
 	/// This function needs to do all the math for energy and correlation deltas and store
 	/// the results inside the containers hosted by event.
 	  void _update_deltas(EventType &event, 
-						std::tuple<Index,Index> &mutating_sites,
-						std::tuple<Index,Index> &sublats,
-						std::tuple<int,int> &curr_occs,
-						std::tuple<int,int> &new_occs) const;
+						std::tuple<Index,Index,Index> &mutating_sites,
+						std::tuple<Index,Index,Index> &sublats,
+						std::tuple<int,int,int> &curr_occs,
+						std::tuple<int,int,int> &new_occs) const;
     
       /// \brief Calculate properties given current conditions
     void _update_properties();
