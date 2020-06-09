@@ -295,10 +295,10 @@ namespace CASM {
                  << "    param_chem_pot.transpose() * dx_dn: \n" << param_chem_pot.transpose()*Mpinv << "\n"
                  << "    param_chem_pot.transpose() * dx_dn * dN: " << param_chem_pot.transpose()*Mpinv *std::get<0>(m_event.dN()).cast<double>() << "\n"
                  << "Swap step 1: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_1, curr_species_1) << "\n"
-
-
                  << "Swap step 2: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_2, curr_species_2) << "\n"
+                 << "Swap step 3: d(Nunit * param_chem_pot * x): " << exchange_chem_pot(new_species_3, curr_species_3) << "\n"
 
+                /// TODO: make it for third
                  << "  d(Ef2): " << std::get<1>(m_event.dEf()) << "\n"
                  << "  d(Epot2): " << std::get<1>(m_event.dEf()) - exchange_chem_pot(new_species_2, curr_species_2) << "\n"
                  << std::endl;
