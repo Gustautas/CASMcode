@@ -316,6 +316,7 @@ namespace CASM {
 
 	/// \brief Based on a random number, decide if the change in energy from the proposed event is low enough to be accepted.
     bool ChargeNeutralGrandCanonical::check(const EventType &event){
+      //std::cout << " dEpot_swapped_twice: " << dEpot_swapped_twice() << std::endl;
       if(event.dEpot_swapped_twice() < 0.0) {
 
         if(debug()) {
@@ -755,7 +756,11 @@ namespace CASM {
         // ---- set dpotential_energy --------------
         double dEpot_2 = std::get<1>(event.dEf()) - m_condition.exchange_chem_pot(new_species_2, curr_species_2);
         event.set_dEpot(dEpot_2);
+      
+        /// GUSTAS: @TODO: set dEpot_2 sometime
+
         // Calculate dEpot after two swaps
+        /// TODO add third too.
         event.set_dEpot_swapped_twice(dEpot_1+dEpot_2);
         // Zeyu: after get dEpot_swapped_twice, change configuration back to origin....
         _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = event.original_occ_first_swap();
