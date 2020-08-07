@@ -53,10 +53,10 @@ class ChargeNeutralGrandCanonicalEvent {
     	std::tuple<double,double,double> dEpot() const;
 
     	/// \brief  Access the occupational modification for this event
-    	std::pair<OccMod,OccMod> &occupational_change();
+    	std::tuple<OccMod,OccMod,OccMod> &occupational_change();
 
     	/// \brief const Access the occupational modification for this event
-    	const std::pair<OccMod,OccMod> &occupational_change() const;
+    	const std::tuple<OccMod,OccMod,OccMod> &occupational_change() const;
 
     	/// \brief Access the changes in (extensive) correlations associated with this event
     	std::tuple<Eigen::VectorXd,Eigen::VectorXd> &dCorr();
@@ -163,6 +163,7 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 
 	  /// \brief Set the change in potential energy: dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
+	  /// @TODO fix somhow GUSTAS
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dEpot(double dEpot) {
 		if(!is_swapped()){
 			std::get<0>(m_dEpot) = dEpot;
@@ -178,12 +179,12 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 
 	  /// \brief Access the occupational modification for this event
-	  inline std::pair<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change(){
+	  inline std::tuple<OccMod,OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change(){
 		  return m_occ_mod;
 	  }
 
 	  /// \brief const Access the occupational modification for this event
-	  inline const std::pair<OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change() const{
+	  inline const std::tuple<OccMod,OccMod,OccMod> &ChargeNeutralGrandCanonicalEvent::occupational_change() const{
 		  return m_occ_mod;
 	  }
 	

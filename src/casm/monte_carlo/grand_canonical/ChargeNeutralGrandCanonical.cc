@@ -240,7 +240,7 @@ namespace CASM {
           const auto &site_occ_2 = primclex().get_prim().basis[sublat_2].site_occupant();
           const auto &site_occ_3 = primclex().get_prim().basis[sublat_3].site_occupant();
           _log().custom("Propose charge neutral grand canonical event");
-
+          
           _log()  << "  Mutating site 1 (linear index): " << mutating_site_1 << "\n"
                   << "  Sublattice: "<< sublat_1<<"\n"
                   << "  Mutating site (b, i, j, k): " << supercell().uccoord(mutating_site_1) << "\n"
@@ -738,6 +738,37 @@ namespace CASM {
         _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
         // mark the changes of the first site
         event.set_is_swapped(true);
+     
+     
+   //     // Site 2.5
+   //     // ---- set OccMod --------------
+   //     std::get<0>(event.occupational_change()).set(std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(new_occs));
+
+   //     // ---- set dspecies --------------
+   //     for(int i = 0; i < std::get<0>(event.dN()).size(); ++i) {
+   //       event.set_dN(i, 0);
+   //     }
+   //     Index curr_species_1 = m_site_swaps.sublat_to_mol()[std::get<0>(sublats)][std::get<0>(curr_occs)];
+   //     Index new_species_1 = m_site_swaps.sublat_to_mol()[std::get<0>(sublats)][std::get<0>(new_occs)];
+   //     event.set_dN(curr_species_1, -1);
+   //     event.set_dN(new_species_1, 1);
+
+   //     // ---- set dcorr --------------
+   //     _set_dCorr(event, std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(curr_occs), std::get<0>(new_occs), m_use_deltas, m_all_correlations); // Zeyu: Shall we rewrite _set_dCorr?
+
+   //     // ---- set dformation_energy --------------
+   //     event.set_dEf(_eci() * std::get<0>(event.dCorr()).data());
+
+   //     // ---- set dpotential_energy --------------
+   //     double dEpot_1 = std::get<0>(event.dEf()) - m_condition.exchange_chem_pot(new_species_1, curr_species_1);
+   //     event.set_dEpot(dEpot_1);
+   //     // back up site 1 occupation
+   //     event.set_original_occ_first_swap(_configdof().occ(std::get<0>(event.occupational_change()).site_index()));
+   //     // // Site 1 modification finished, update configuration ....
+   //     _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
+   //     // mark the changes of the first site
+   //     event.set_is_swapped(true);
+
         // Site 2
         // ---- set OccMod --------------
         std::get<1>(event.occupational_change()).set(std::get<1>(mutating_sites), std::get<1>(sublats), std::get<1>(new_occs));
