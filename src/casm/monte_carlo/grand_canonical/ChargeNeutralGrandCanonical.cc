@@ -348,16 +348,22 @@ namespace CASM {
         // First apply changes to configuration (just a single occupant change)
         _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
         _configdof().occ(std::get<1>(event.occupational_change()).site_index()) = std::get<1>(event.occupational_change()).to_value();
+        // just added third
+        _configdof().occ(std::get<2>(event.occupational_change()).site_index()) = std::get<2>(event.occupational_change()).to_value();
 
         // Next update all properties that changed from the event // Zeyu: update twice, the volume does not change throughout the simulation
         _formation_energy() += std::get<0>(event.dEf()) / supercell().volume();
         _formation_energy() += std::get<1>(event.dEf()) / supercell().volume();
+        _formation_energy() += std::get<2>(event.dEf()) / supercell().volume();
         _potential_energy() += std::get<0>(event.dEpot()) / supercell().volume();
         _potential_energy() += std::get<1>(event.dEpot()) / supercell().volume();
+        _potential_energy() += std::get<2>(event.dEpot()) / supercell().volume();
         _corr() += std::get<0>(event.dCorr()) / supercell().volume();
         _corr() += std::get<1>(event.dCorr()) / supercell().volume();
+        _corr() += std::get<2>(event.dCorr()) / supercell().volume();
         _comp_n() += std::get<0>(event.dN()).cast<double>() / supercell().volume();
         _comp_n() += std::get<1>(event.dN()).cast<double>() / supercell().volume();
+        _comp_n() += std::get<2>(event.dN()).cast<double>() / supercell().volume();
 
         return;
     }
@@ -590,18 +596,30 @@ namespace CASM {
     }
     ///Gustas: TODO: Make sure this is right !!?? 
     else {
+      std::cout << "Count5: " << *event.get_cor_count() << std::endl;
+      event.reset(event.get_cor_count());
+      std::cout << "Count6: " << *event.get_cor_count() << std::endl;
       std::cout << "!!!!!!!!!!!!!!!!!!!Small box: not using deltas" << std::endl;
       Eigen::VectorXd before;
       Eigen::VectorXd after;
-      if (!event.is_swapped()){
+      if (*event.get_cor_count() == 0){
       std::cout << "!!!!!!!!!!!!!!!!!!Not swaped (not all correlations)" << std::endl; 
       before = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size()); //Zeyu: is this correct???? Gustas: whatewer, lets use big box anyway.
       after = Eigen::VectorXd::Zero(std::get<0>(event.dCorr()).size());
       }
-      if (event.is_swapped()){
+      event.increment(event.get_cor_count());
+      std::cout << "Count7: " << *event.get_cor_count() << std::endl;
+      if (*event.get_cor_count() == 1){
       std::cout << "!!!!!!!!!!!!!!!!!!Swaped (not all correlations)" << std::endl;
       before = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());
       after = Eigen::VectorXd::Zero(std::get<1>(event.dCorr()).size());        
+      }
+      event.increment(event.get_cor_count());
+      std::cout << "Count8: " << *event.get_cor_count() << std::endl;
+      if (*event.get_cor_count() == 2){
+      std::cout << "!!!!!!!!!!!!!!!!!!Swaped (not all correlations)" << std::endl;
+      before = Eigen::VectorXd::Zero(std::get<2>(event.dCorr()).size());
+      after = Eigen::VectorXd::Zero(std::get<2>(event.dCorr()).size());        
       }
 
       // Calculate the change in points correlations due to this event
@@ -633,15 +651,21 @@ namespace CASM {
         _clexulator().calc_restricted_point_corr(sublat, after.data(), begin, end);
 
       }
-
+      event.reset(event.get_cor_count());
       // Calculate the change in correlations due to this event
-      if (!event.is_swapped()){
+      if (*event.get_cor_count() == 0){
       std::cout << "!!!!!!!!!!!!!!!!!!Not swaped" << std::endl; 
       std::get<0>(event.dCorr()) = after - before;
       }
-      if (event.is_swapped()){
+      event.increment(event.get_cor_count());
+      if (*event.get_cor_count() == 1){
       std::cout << "!!!!!!!!!!!!!!!!!!Swapped" << std::endl; 
       std::get<1>(event.dCorr()) = after - before;  
+      }
+      event.increment(event.get_cor_count());
+      if (*event.get_cor_count() == 2){
+      std::cout << "!!!!!!!!!!!!!!!!!!Swapped" << std::endl; 
+      std::get<2>(event.dCorr()) = after - before;  
       }
 
       // Unapply changes
@@ -649,11 +673,17 @@ namespace CASM {
     }
 
     if(debug()) {
-      if (!event.is_swapped()){
+      event.reset(event.get_cor_count());
+      if (*event.get_cor_count() == 0){
       _print_correlations(std::get<0>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
-      if (event.is_swapped()){
+      event.increment(event.get_cor_count());
+      if (*event.get_cor_count() == 1){
       _print_correlations(std::get<1>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
+      }
+      event.increment(event.get_cor_count());
+      if (*event.get_cor_count() == 2){
+      _print_correlations(std::get<2>(event.dCorr()), "delta correlations", "dCorr", all_correlations);
       }
     }
   }
@@ -807,15 +837,17 @@ namespace CASM {
 						std::tuple<int,int,int> &curr_occs,
 						std::tuple<int,int,int> &new_occs) const{
         // reset the flag
-        event.set_is_swapped(false);
-        event.reset();
+        //event.set_is_swapped(false);
+        event.reset(event.get_occ_count());
+        std::cout << "Count1: " << *event.get_occ_count() << std::endl;       
+        
         // Site 1
         // ---- set OccMod --------------
         std::get<0>(event.occupational_change()).set(std::get<0>(mutating_sites), std::get<0>(sublats), std::get<0>(new_occs));
 
         // ---- set dspecies --------------
         for(int i = 0; i < std::get<0>(event.dN()).size(); ++i) {
-          std::cout << "dn_size iter: " << i << std::endl;
+//          std::cout << "dn_size iter: " << i << std::endl;
           event.set_dN(i, 0);
         }
         Index curr_species_1 = m_site_swaps.sublat_to_mol()[std::get<0>(sublats)][std::get<0>(curr_occs)];
@@ -834,16 +866,16 @@ namespace CASM {
         event.set_dEpot(dEpot_1);
         // back up site 1 occupation
         event.set_original_occ_first_swap(_configdof().occ(std::get<0>(event.occupational_change()).site_index()));
-        std::cout << "curr_occs" << std::get<0>(curr_occs) << std::endl;
+//        std::cout << "curr_occs" << std::get<0>(curr_occs) << std::endl;
 
-        std::cout << "OG:" << _configdof().occ(std::get<0>(event.occupational_change()).site_index()) << std::endl;
+//        std::cout << "OG:" << _configdof().occ(std::get<0>(event.occupational_change()).site_index()) << std::endl;
         // // Site 1 modification finished, update configuration ....
         _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = std::get<0>(event.occupational_change()).to_value();
-        std::cout << "To change to :" << std::get<0>(event.occupational_change()).to_value() << std::endl;
+  //      std::cout << "To change to :" << std::get<0>(event.occupational_change()).to_value() << std::endl;
         // mark the changes of the first site
-        event.set_is_swapped(true);
-        event.increment();
-     
+//        event.set_is_swapped(true);
+        event.increment(event.get_occ_count());
+        std::cout << "Count2: " << *event.get_occ_count() << std::endl;
        // Site 2
        // ---- set OccMod --------------
        std::get<1>(event.occupational_change()).set(std::get<1>(mutating_sites), std::get<1>(sublats), std::get<1>(new_occs));
@@ -868,13 +900,12 @@ namespace CASM {
        event.set_dEpot(dEpot_2);
        // back up site 1 occupation
        event.set_original_occ_second_swap(_configdof().occ(std::get<1>(event.occupational_change()).site_index()));
-       std::cout << "OG_2:" << _configdof().occ(std::get<1>(event.occupational_change()).site_index()) << std::endl;
-       // // Site 1 modification finished, update configuration ....
+       // // Site 2 modification finished, update configuration ....
        _configdof().occ(std::get<1>(event.occupational_change()).site_index()) = std::get<1>(event.occupational_change()).to_value();
-       // mark the changes of the first site
-       std::cout << "To change to_2 :" << std::get<1>(event.occupational_change()).to_value() << std::endl;
+       // mark the changes of the second site
       // event.set_is_swapped(true);
-       event.increment();
+       event.increment(event.get_occ_count());
+       std::cout << "Count3: " << *event.get_occ_count() << std::endl;
         // Site 3
         // ---- set OccMod --------------
         std::get<2>(event.occupational_change()).set(std::get<2>(mutating_sites), std::get<2>(sublats), std::get<2>(new_occs));
@@ -893,8 +924,6 @@ namespace CASM {
         // ---- set dpotential_energy --------------
         double dEpot_3 = std::get<2>(event.dEf()) - m_condition.exchange_chem_pot(new_species_3, curr_species_3);
         event.set_dEpot(dEpot_3);
-      
-        std::cout << "dEpOT 1,2,3: " << dEpot_1 << dEpot_2 << dEpot_3 << std::endl;
 
         /// GUSTAS: @TODO: set dEpot_2 sometime
 
@@ -903,8 +932,8 @@ namespace CASM {
         event.set_dEpot_swapped_twice(dEpot_1+dEpot_2+dEpot_3);
         // Zeyu: after get dEpot_swapped_twice, change configuration back to origin....
         _configdof().occ(std::get<0>(event.occupational_change()).site_index()) = event.original_occ_first_swap();
-        event.set_is_swapped(false);
-        
+        _configdof().occ(std::get<1>(event.occupational_change()).site_index()) = event.original_occ_second_swap();
+//        event.set_is_swapped(false);
      }
 
   /// \brief Calculate properties given current conditions

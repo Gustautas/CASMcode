@@ -80,9 +80,10 @@ class ChargeNeutralGrandCanonicalEvent {
 		const double dEpot_swapped_twice() const;
 
 		/// DIRTY
-		void increment(void);
-		void reset(void);
-		int get_count(void);
+		void increment(int* count);
+		void reset(int* count);
+		int* get_occ_count(void);
+		int* get_cor_count(void);
   	private:
     	/// \brief Change in (extensive) correlations due to this event
     	std::tuple<Eigen::VectorXd,Eigen::VectorXd,Eigen::VectorXd> m_dCorr;
@@ -103,7 +104,8 @@ class ChargeNeutralGrandCanonicalEvent {
 		/// dEpot for two swaps
 		double m_dEpot_swapped_twice;
 		bool m_is_swapped;
-		int count;
+		int occ_count;
+		int cor_count;
 		int m_original_occ_first_swap;
 		int m_original_occ_second_swap;
 		
@@ -123,7 +125,8 @@ class ChargeNeutralGrandCanonicalEvent {
 			std::get<1>(m_dN) = Eigen::VectorXl(Nspecies);
 			std::get<2>(m_dCorr) = Eigen::VectorXd(Ncorr);
 			std::get<2>(m_dN) = Eigen::VectorXl(Nspecies);
-			count = 0;
+			occ_count = 0;
+			cor_count = 0;
 		// }
 
 		// if (is_swapped()){ // for initialization....
@@ -132,16 +135,22 @@ class ChargeNeutralGrandCanonicalEvent {
 
 	  /// \brief Return change in total (formation) energy associated with this event
 	  inline std::tuple<double,double,double> ChargeNeutralGrandCanonicalEvent::dEf() const {
+		// std::cout << "m_DEF" << std::get<0>(m_dEf) << std::endl;
 	    return m_dEf;
 	  }
 	  /// \brief Set the change in total (formation) energy associated with this event
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dEf(double dEf) {
-		if(!is_swapped()){
+		if(occ_count == 0){
 			std::get<0>(m_dEf) = dEf;
 		}
-		if (is_swapped()){
+		else if (occ_count ==1){
 	   		std::get<1>(m_dEf) = dEf;
 		}
+		else if (occ_count ==2){
+	   		std::get<2>(m_dEf) = dEf;
+		}
+		else{}
+		
 	  }
 
 	  /// \brief Access change in number of all species (extensive). Order as in CompositionConverter::components().
@@ -155,41 +164,46 @@ class ChargeNeutralGrandCanonicalEvent {
 
 	  /// \brief const Access change in number of species (extensive) described by size_type. Order as in CompositionConverter::components().
 	  inline long int ChargeNeutralGrandCanonicalEvent::dN(size_type species_type_index) const {
-		if(count == 0){
+		if(occ_count == 0){
 			return std::get<0>(m_dN)(species_type_index);
 		}
-		if(count == 1){
+		else if(occ_count == 1){
 	   		return std::get<1>(m_dN)(species_type_index);
 		}
-		if(count == 2){
+		else if(occ_count == 2){
 	   		return std::get<2>(m_dN)(species_type_index);
 		}
-		else{ std::cout << "incorect count" << std::endl; }
+		else{ std::cout << "incorect occ_count" << std::endl; }
 	  }
 
 	  /// \brief Set the change in number of species (extensive) described by size_type. Order as in CompositionConverter::components().
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dN(size_type species_type_index, long int dNi) {
-	  	if(count == 0){
+	  	if(occ_count == 0){
 			 std::get<0>(m_dN)(species_type_index) = dNi;
 		}
-		if(count == 1){
+		else if(occ_count == 1){
 	   		 std::get<1>(m_dN)(species_type_index) = dNi;
 		}
-		if(count == 2){
+		else if(occ_count == 2){
 	   		std::get<2>(m_dN)(species_type_index) = dNi;
 		}
-		else{ std::cout << "incorect count" << std::endl; }
+
+		else{ std::cout << "incorect occ_count" << std::endl; }
 	  }
 
 	  /// \brief Set the change in potential energy: dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
 	  /// @TODO fix somhow GUSTAS
 	  inline void ChargeNeutralGrandCanonicalEvent::set_dEpot(double dEpot) {
-		if(!is_swapped()){
+		if(occ_count == 0){
 			std::get<0>(m_dEpot) = dEpot;
 		}
-		if (is_swapped()){
+		else if (occ_count ==1 ){
 	   		std::get<1>(m_dEpot) = dEpot;
 		}
+		else if (occ_count ==2 ){
+	   		std::get<2>(m_dEpot) = dEpot;
+		}
+		else{}
 	  }
 
 	  /// \brief Return change in potential energy: dEpot = dEf - sum_i(Nunit * param_chem_pot_i * dcomp_x_i)
@@ -251,14 +265,17 @@ class ChargeNeutralGrandCanonicalEvent {
 	  }
 
 	  		/// DIRTY
-	inline	void ChargeNeutralGrandCanonicalEvent::increment(void){
-		count += 1;
+	inline	void ChargeNeutralGrandCanonicalEvent::increment(int* count){
+		*count += 1;
 	}
-	inline	void ChargeNeutralGrandCanonicalEvent::reset(void){
-		count = 0;
+	inline	void ChargeNeutralGrandCanonicalEvent::reset(int* count){
+		*count = 0;
 	}
-	inline	int ChargeNeutralGrandCanonicalEvent::get_count(void){
-		return count;
+	inline	int* ChargeNeutralGrandCanonicalEvent::get_occ_count(void){
+		return &occ_count;
+	}
+	inline	int* ChargeNeutralGrandCanonicalEvent::get_cor_count(void){
+		return &cor_count;
 	}
 
 }
