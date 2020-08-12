@@ -168,74 +168,129 @@ namespace CASM {
 	      int n_Na = 6;
         
         // Zeyu: 2 mutations at the same time; pick one Na/Va and one Si/P with the same occupancy and flip them together
-        int iter_try = 1;
+     //   int iter_try = 1;
+     //   do{
+     //     // Randomly pick a site that's allowed more than one occupant
+     //     // TODO add site 3 for NA
+     //     
+     //     //Debug
+     //     //std::cout << "iter: " << iter_try << std::endl;
+     //     /// TODO: first and second representing Na/Va and third representing Mn/Ti. Not yewt
+     //     // G: back and forward (debugging)
+     //     random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+     //     random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+     //     random_variable_site_3 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+     //     
+     //     //Debug:
+     //     std::cout << "variable sites: " << m_site_swaps.variable_sites() << std::endl;
+     //     std::cout << "size for random int: " << m_site_swaps.variable_sites().size() << std::endl;
+
+     //     
+
+
+     //     //debug
+     //     std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
+     //     std::cout << "random_variable_site_2: " << random_variable_site_2 << std::endl;
+     //     std::cout << "random_variable_site_3: " << random_variable_site_3 << std::endl;
+
+     //   // Determine what that site's linear index is and what the sublattice index is
+     //     // mutating_site_1 =  2; 
+     //     // mutating_site_2 =  32; 
+     //     // mutating_site_3 =  95;          
+     //     mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1];  
+     //     mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
+     //     mutating_site_3 = m_site_swaps.variable_sites()[random_variable_site_3];
+     //    
+     //     //debug
+     //     //std::cout << "mutating_site_1 : " << mutating_site_1 << std::endl;
+     //     //std::cout << "mutating_site_2 : " << mutating_site_2 << std::endl;
+     //     //std::cout << "mutating_site_3 : " << mutating_site_3 << std::endl;
+
+
+     //    // sublat_1 = 0;
+     //    // sublat_2 = 4;
+     //    // sublat_3 = 11;
+     //     sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
+     //     sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
+     //     sublat_3 = m_site_swaps.sublat()[random_variable_site_3];
+
+     //     //debug
+     //     // std::cout << "sublat_full : " << m_site_swaps.sublat() << std::endl;
+     //     std::cout << "sublat_1 : " << sublat_1 << std::endl;
+     //     std::cout << "sublat_2 : " << sublat_2 << std::endl;     
+     //     std::cout << "sublat_3 : " << sublat_3 << std::endl;     
+
+     //     // Determine the current occupant of the mutating site
+     //     current_occupant_1 = configdof().occ(mutating_site_1);
+     //     current_occupant_2 = configdof().occ(mutating_site_2);
+     //     current_occupant_3 = configdof().occ(mutating_site_3);
+     //     //debug
+     //     //std::cout << "current_occupant_1: " << current_occupant_1 << std::endl;
+     //     //std::cout << "current_occupant_2: " << current_occupant_2 << std::endl;      
+     //     //std::cout << "current_occupant_3: " << current_occupant_3 << std::endl;      
+     //     iter_try += 1;
+
+     //   }
+     //   while (
+     //     !(
+     //      (
+     //      // check if there are 2 Va/Na and one is Ti/Mn. Also if Va/Na sites are unique
+     //      
+     //     // true
+     //        (sublat_1 <= n_Na && sublat_2 <= n_Na && sublat_3 > n_Na && sublat_1 != sublat_2) || 
+     //        (sublat_1 > n_Na && sublat_2 <= n_Na && sublat_3 <= n_Na && sublat_2 != sublat_3) || 
+     //        (sublat_1 <= n_Na && sublat_2 > n_Na && sublat_3 <= n_Na && sublat_1 != sublat_3) 
+     //      ) && 
+     //        (current_occupant_1 == current_occupant_2 && current_occupant_2 == current_occupant_3)
+     //     )
+     //   );
+
+
+       // int iter_try = 1;
+        
+        //pick random site index for Mn:        
         do{
-          // Randomly pick a site that's allowed more than one occupant
-          // TODO add site 3 for NA
-          
-          //Debug
-          //std::cout << "iter: " << iter_try << std::endl;
-          /// TODO: first and second representing Na/Va and third representing Mn/Ti. Not yewt
-          // G: back and forward (debugging)
-          random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
-          random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
-          random_variable_site_3 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
-          //debug
-          //std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
-          //std::cout << "random_variable_site_2: " << random_variable_site_2 << std::endl;
-          //std::cout << "random_variable_site_3: " << random_variable_site_3 << std::endl;
+        random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+        // get mutating site:
+        mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1]; 
+        // get sublatice and current occupant
+        sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
+        current_occupant_1 = configdof().occ(mutating_site_1);
+        }while ( !(sublat_1 > n_Na) );
 
-        // Determine what that site's linear index is and what the sublattice index is
-          // mutating_site_1 =  2; 
-          // mutating_site_2 =  32; 
-          // mutating_site_3 =  95;          
-          mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1];  
-          mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
-          mutating_site_3 = m_site_swaps.variable_sites()[random_variable_site_3];
-         
-          //debug
-          //std::cout << "mutating_site_1 : " << mutating_site_1 << std::endl;
-          //std::cout << "mutating_site_2 : " << mutating_site_2 << std::endl;
-          //std::cout << "mutating_site_3 : " << mutating_site_3 << std::endl;
+        //pick first Na
+        do{
+        random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+        mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
+        sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
+        current_occupant_2 = configdof().occ(mutating_site_2);
+        // keep trying while:
+        }while (
+        !(
+            sublat_2 <= n_Na && current_occupant_1 == current_occupant_2
+         )
+        ); 
+        //pick second Na
+        do{
+        random_variable_site_3 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+        mutating_site_3 = m_site_swaps.variable_sites()[random_variable_site_3];
+        sublat_3 = m_site_swaps.sublat()[random_variable_site_3];
+        current_occupant_3 = configdof().occ(mutating_site_3);
+        // keep trying while:
+        }while (
+        !(
+            sublat_3 <= n_Na && current_occupant_1 == current_occupant_3 && random_variable_site_2 != random_variable_site_3
+         )
+        ); 
+        
 
-
-         // sublat_1 = 0;
-         // sublat_2 = 4;
-         // sublat_3 = 11;
-          sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
-          sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
-          sublat_3 = m_site_swaps.sublat()[random_variable_site_3];
-
-          //debug
-          // std::cout << "sublat_full : " << m_site_swaps.sublat() << std::endl;
-          //std::cout << "sublat_1 : " << sublat_1 << std::endl;
-          //std::cout << "sublat_2 : " << sublat_2 << std::endl;     
-          //std::cout << "sublat_3 : " << sublat_3 << std::endl;     
-
-          // Determine the current occupant of the mutating site
-          current_occupant_1 = configdof().occ(mutating_site_1);
-          current_occupant_2 = configdof().occ(mutating_site_2);
-          current_occupant_3 = configdof().occ(mutating_site_3);
-          //debug
-          //std::cout << "current_occupant_1: " << current_occupant_1 << std::endl;
-          //std::cout << "current_occupant_2: " << current_occupant_2 << std::endl;      
-          //std::cout << "current_occupant_3: " << current_occupant_3 << std::endl;      
-          iter_try += 1;
-
-        }
-        while (
-          !(
-           (
-           // check if there are 2 Va/Na and one is Ti/Mn. Also if Va/Na sites are unique
-           
-          // true
-             (sublat_1 <= n_Na && sublat_2 <= n_Na && sublat_3 > n_Na && sublat_1 != sublat_2) || 
-             (sublat_1 > n_Na && sublat_2 <= n_Na && sublat_3 <= n_Na && sublat_2 != sublat_3) || 
-             (sublat_1 <= n_Na && sublat_2 > n_Na && sublat_3 <= n_Na && sublat_1 != sublat_3) 
-           ) && 
-             (current_occupant_1 == current_occupant_2 && current_occupant_2 == current_occupant_3)
-          )
-        );
+        std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
+        std::cout << "random_variable_site_2: " << random_variable_site_2 << std::endl;
+        std::cout << "random_variable_site_3: " << random_variable_site_3 << std::endl;
+        std::cout << "sublat_1 : " << sublat_1 << std::endl;
+        std::cout << "sublat_2 : " << sublat_2 << std::endl;     
+        std::cout << "sublat_3 : " << sublat_3 << std::endl;     
+        
 
         // Randomly pick a new occupants for the mutating sites
         const std::vector<int> &possible_mutation_1 = m_site_swaps.possible_swap()[sublat_1][current_occupant_1];
