@@ -247,17 +247,8 @@ namespace CASM {
 
 
        // int iter_try = 1;
-        
-        //pick random site index for Mn:        
-        do{
-        random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
-        // get mutating site:
-        mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1]; 
-        // get sublatice and current occupant
-        sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
-        current_occupant_1 = configdof().occ(mutating_site_1);
-        }while ( !(sublat_1 > n_Na) );
 
+       // Have to start from NA since not for all there can be a point where all NA sites are filled but its possible to add another Mn
         //pick first Na
         do{
         random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
@@ -267,7 +258,7 @@ namespace CASM {
         // keep trying while:
         }while (
         !(
-            sublat_2 <= n_Na && current_occupant_1 == current_occupant_2
+            sublat_2 <= n_Na
          )
         ); 
         //pick second Na
@@ -279,9 +270,49 @@ namespace CASM {
         // keep trying while:
         }while (
         !(
-            sublat_3 <= n_Na && current_occupant_1 == current_occupant_3 && random_variable_site_2 != random_variable_site_3
+            sublat_3 <= n_Na && current_occupant_3 == current_occupant_2 && random_variable_site_2 != random_variable_site_3
          )
         ); 
+
+        //pick random site index for Mn:        
+        do{
+        random_variable_site_1 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+        // get mutating site:
+        mutating_site_1 = m_site_swaps.variable_sites()[random_variable_site_1]; 
+        // get sublatice and current occupant
+        sublat_1 = m_site_swaps.sublat()[random_variable_site_1];
+        current_occupant_1 = configdof().occ(mutating_site_1);
+        std::cout << "checking Mn in site: " << random_variable_site_1 << std::endl;
+        }while (
+           !(
+             sublat_1 > n_Na && current_occupant_1 == current_occupant_2
+             ) 
+            );
+
+     //   //pick first Na
+     //   do{
+     //   random_variable_site_2 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+     //   mutating_site_2 = m_site_swaps.variable_sites()[random_variable_site_2];
+     //   sublat_2 = m_site_swaps.sublat()[random_variable_site_2];
+     //   current_occupant_2 = configdof().occ(mutating_site_2);
+     //   // keep trying while:
+     //   }while (
+     //   !(
+     //       sublat_2 <= n_Na && current_occupant_1 == current_occupant_2
+     //    )
+     //   ); 
+     //   //pick second Na
+     //   do{
+     //   random_variable_site_3 = _mtrand().randInt(m_site_swaps.variable_sites().size() - 1);
+     //   mutating_site_3 = m_site_swaps.variable_sites()[random_variable_site_3];
+     //   sublat_3 = m_site_swaps.sublat()[random_variable_site_3];
+     //   current_occupant_3 = configdof().occ(mutating_site_3);
+     //   // keep trying while:
+     //   }while (
+     //   !(
+     //       sublat_3 <= n_Na && current_occupant_1 == current_occupant_3 && random_variable_site_2 != random_variable_site_3
+     //    )
+     //   ); 
         
 
         std::cout << "random_variable_site_1: " << random_variable_site_1 << std::endl;
